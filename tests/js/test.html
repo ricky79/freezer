@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Test JS Freezer</title>
+  <style>.pass { color: #1a7f37; } .fail { color: #b3261e; font-weight: bold; }</style>
+</head>
+<body>
+  <h1 id="summary" data-summary="RUNNING">In esecuzione…</h1>
+  <ul id="results"></ul>
+  <script type="module">
+    import { run } from './harness.js';
+    import './expiry.test.js';
+    import './format.test.js';
+    import './persist.test.js';
+    import './store.test.js';
+    run();
+  </script>
+</body>
+</html>
