@@ -1,3 +1,97 @@
 <!doctype html>
-<title>Freezer</title>
-<p>Freezer</p>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b4f6c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Freezer">
+  <link rel="stylesheet" href="style.css">
+  <title>Freezer</title>
+</head>
+<body>
+  <header class="top">
+    <h1 class="top__title">❄️ Freezer</h1>
+    <p id="sync-status" class="top__status" role="status" aria-live="polite"></p>
+  </header>
+
+  <main class="content">
+    <button id="alert-banner" type="button" class="alerts" aria-pressed="false" hidden></button>
+    <input id="search" class="search" type="search" placeholder="Cerca…" autocomplete="off" aria-label="Cerca per descrizione">
+    <nav id="category-filters" class="chips" aria-label="Filtra per tipo"></nav>
+    <ul id="lot-list" class="lots"></ul>
+    <p id="empty" class="empty" hidden></p>
+  </main>
+
+  <button id="add-button" type="button" class="add">＋ Aggiungi</button>
+
+  <dialog id="take-dialog" class="sheet">
+    <form id="take-form" novalidate>
+      <h2 id="take-title" class="sheet__title"></h2>
+      <p id="take-available" class="sheet__hint"></p>
+      <label class="field__label" for="take-amount">Quanti ne prendi?</label>
+      <div id="take-stepper" class="stepper">
+        <button type="button" class="stepper__btn" data-step="-1" data-target="take-amount" aria-label="Meno">−</button>
+        <input id="take-amount" class="stepper__input" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+        <button type="button" class="stepper__btn" data-step="1" data-target="take-amount" aria-label="Più">+</button>
+      </div>
+      <p id="take-error" class="error" role="alert" hidden></p>
+      <div class="actions">
+        <button type="button" class="btn" data-close>Annulla</button>
+        <button type="button" id="take-all" class="btn">Tutto</button>
+        <button type="submit" class="btn btn--primary">Prendi</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="detail-dialog" class="sheet">
+    <h2 id="detail-title" class="sheet__title"></h2>
+    <dl id="detail-info" class="details"></dl>
+    <div class="actions">
+      <button type="button" class="btn" data-close>Chiudi</button>
+      <button type="button" id="detail-delete" class="btn btn--danger">Elimina</button>
+      <button type="button" id="detail-edit" class="btn btn--primary">Modifica</button>
+    </div>
+  </dialog>
+
+  <dialog id="form-dialog" class="sheet">
+    <form id="lot-form" novalidate>
+      <h2 id="form-title" class="sheet__title">Aggiungi</h2>
+      <label class="field__label" for="f-description">Descrizione</label>
+      <input id="f-description" class="field" list="suggestions" maxlength="100" autocomplete="off" autocapitalize="sentences">
+      <datalist id="suggestions"></datalist>
+      <div class="row">
+        <div>
+          <label class="field__label" for="f-category">Tipo</label>
+          <select id="f-category" class="field"></select>
+        </div>
+        <div>
+          <label class="field__label" for="f-unit">Unità</label>
+          <select id="f-unit" class="field"></select>
+        </div>
+      </div>
+      <label class="field__label" for="f-quantity">Quantità</label>
+      <div id="f-stepper" class="stepper">
+        <button type="button" class="stepper__btn" data-step="-1" data-target="f-quantity" aria-label="Meno">−</button>
+        <input id="f-quantity" class="stepper__input" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+        <button type="button" class="stepper__btn" data-step="1" data-target="f-quantity" aria-label="Più">+</button>
+      </div>
+      <label class="field__label" for="f-expiry">Scadenza</label>
+      <input id="f-expiry" class="field" type="date">
+      <div id="quick-expiry" class="quick">
+        <button type="button" class="chip" data-months="1">+1 mese</button>
+        <button type="button" class="chip" data-months="3">+3 mesi</button>
+        <button type="button" class="chip" data-months="6">+6 mesi</button>
+      </div>
+      <p id="form-error" class="error" role="alert" hidden></p>
+      <div class="actions">
+        <button type="button" class="btn" data-close>Annulla</button>
+        <button type="submit" class="btn btn--primary">Salva</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

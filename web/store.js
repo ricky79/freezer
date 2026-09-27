@@ -46,3 +46,13 @@ export function changedFields(original, updated) {
   }
   return fields;
 }
+
+export function validateLot({ description, category, unit, quantity, expiry }) {
+  if (!description) return 'Scrivi una descrizione.';
+  if (description.length > 100) return 'La descrizione può avere al massimo 100 caratteri.';
+  if (!category) return 'Scegli il tipo.';
+  if (!unit) return 'Scegli l\'unità.';
+  if (quantity === null) return 'La quantità deve essere un numero intero tra 1 e 99999.';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(expiry)) return 'Scegli la data di scadenza.';
+  return null;
+}

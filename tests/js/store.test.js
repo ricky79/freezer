@@ -1,5 +1,5 @@
 import { test, assert, assertEqual } from './harness.js';
-import { applyOp, changedFields, makeOp, removeSent, viewLots } from '../../web/store.js';
+import { applyOp, changedFields, makeOp, removeSent, validateLot, viewLots } from '../../web/store.js';
 
 const lot = (id, extra = {}) => ({
   id, description: 'Piselli', category: 'verdure', quantity: 5, unit: 'buste', expiry: '2027-01-31', ...extra,
@@ -59,4 +59,15 @@ test('changedFields restituisce solo i campi cambiati', () => {
     quantity: 3, expiry: '2027-02-01',
   });
   assertEqual(changedFields(lot('a'), lot('a')), {});
+});
+
+test('validateLot restituisce il primo errore in italiano', () => {
+  const ok = { description: 'Ragù', category: 'sughi', unit: 'barattoli_grandi', quantity: 2, expiry: '2027-03-27' };
+  assertEqual(validateLot(ok), null);
+  assertEqual(validateLot({ ...ok, description: '' }), 'Scrivi una descrizione.');
+  assertEqual(validateLot({ ...ok, description: 'x'.repeat(101) }), 'La descrizione può avere al massimo 100 caratteri.');
+  assertEqual(validateLot({ ...ok, category: '' }), 'Scegli il tipo.');
+  assertEqual(validateLot({ ...ok, unit: '' }), 'Scegli l\'unità.');
+  assertEqual(validateLot({ ...ok, quantity: null }), 'La quantità deve essere un numero intero tra 1 e 99999.');
+  assertEqual(validateLot({ ...ok, expiry: '' }), 'Scegli la data di scadenza.');
 });
