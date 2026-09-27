@@ -275,8 +275,10 @@ certificato l'HTTPS non è ancora attendibile. Contiene:
 - Messaggio (testo semplice, `parse_mode` non usato per evitare problemi di escape):
   ```
   ❄️ Freezer · 27/09
+
   🔴 Scaduti
-  • Ragù della nonna: 2 barattoli grandi (dal 20/09)
+  • Ragù della nonna: 2 barattoli grandi (scaduto il 20/09)
+
   🟠 In scadenza
   • Piselli: 3 buste (tra 3 giorni, 30/09)
   ```
@@ -312,7 +314,7 @@ L'orario della notifica si cambia nel timer systemd (`install.sh` lo accetta com
 - dati: `/var/lib/freezer/` (database + backup), proprietà dell'utente di sistema `freezer`.
 
 **Unità systemd:**
-- `freezer.service`: `uvicorn freezer.api:app --host 127.0.0.1 --port ${FREEZER_PORT}`,
+- `freezer.service`: `uvicorn --factory freezer.api:create_app --host 127.0.0.1 --port ${FREEZER_PORT}`,
   `Restart=on-failure`, eseguito come utente `freezer`;
 - `freezer-notify.service` + `.timer` (08:30);
 - `freezer-backup.service` + `.timer` (03:00): `python -m freezer.backup` usa l'API di backup
