@@ -1,0 +1,17 @@
+[Unit]
+Description=Freezer: avviso scadenze su Telegram
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=freezer
+Group=freezer
+EnvironmentFile=/etc/freezer/freezer.env
+WorkingDirectory=/opt/freezer
+ExecStart=/opt/freezer/.venv/bin/python -m freezer.notify
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/freezer

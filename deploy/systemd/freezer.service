@@ -1,0 +1,21 @@
+[Unit]
+Description=Freezer di cantina (webapp)
+After=network.target
+
+[Service]
+Type=simple
+User=freezer
+Group=freezer
+EnvironmentFile=/etc/freezer/freezer.env
+WorkingDirectory=/opt/freezer
+ExecStart=/opt/freezer/.venv/bin/uvicorn --factory freezer.api:create_app --host 127.0.0.1 --port ${FREEZER_PORT}
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/freezer
+
+[Install]
+WantedBy=multi-user.target

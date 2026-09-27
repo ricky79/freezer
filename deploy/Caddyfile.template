@@ -1,0 +1,38 @@
+# freezer: generato da deploy/install.sh, le modifiche fatte qui verranno sovrascritte.
+{
+	skip_install_trust
+	auto_https disable_redirects
+	pki {
+		ca local {
+			name "Freezer di casa"
+			root_cn "Freezer di casa"
+		}
+	}
+}
+
+https://__HOST__:__HTTPS_PORT__ {
+	tls internal
+	encode gzip
+	reverse_proxy 127.0.0.1:__APP_PORT__
+}
+
+http://__HOST__:__HTTP_PORT__ {
+	@certfile path /cert/root.crt
+	handle @certfile {
+		root * /var/lib/caddy/.local/share/caddy/pki/authorities/local
+		rewrite * /root.crt
+		header Content-Type application/x-x509-ca-cert
+		file_server
+	}
+
+	@certpage path /cert /cert/
+	handle @certpage {
+		root * /etc/caddy
+		rewrite * /freezer-cert.html
+		file_server
+	}
+
+	handle {
+		redir https://{host}__HTTPS_SUFFIX__{uri}
+	}
+}
