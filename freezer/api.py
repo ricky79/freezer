@@ -1,5 +1,6 @@
 """App FastAPI: istantanea, sincronizzazione e file statici dell'interfaccia."""
 
+import hashlib
 import json
 import mimetypes
 from contextlib import closing
@@ -8,7 +9,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 
@@ -28,6 +29,15 @@ mimetypes.add_type("application/manifest+json", ".webmanifest")
 
 def _bad_request(message: str) -> JSONResponse:
     return JSONResponse({"error": message}, status_code=400, headers=NO_STORE)
+
+
+def _assets_version(web_dir: Path) -> str:
+    """Impronta dei file dell'interfaccia: cambia a ogni modifica, e con lei la cache del service worker."""
+    digest = hashlib.sha256()
+    for path in sorted(p for p in web_dir.rglob("*") if p.is_file() and p.name != "sw.js"):
+        digest.update(path.relative_to(web_dir).as_posix().encode())
+        digest.update(path.read_bytes())
+    return digest.hexdigest()[:12]
 
 
 def create_app(config: Config | None = None, web_dir: Path = WEB_DIR) -> FastAPI:
@@ -75,6 +85,14 @@ def create_app(config: Config | None = None, web_dir: Path = WEB_DIR) -> FastAPI
         if len(ops) > MAX_OPS:
             return _bad_request(f"Al massimo {MAX_OPS} operazioni per richiesta.")
         return JSONResponse(await run_in_threadpool(sync_ops, ops), headers=NO_STORE)
+
+    sw_path = web_dir / "sw.js"
+    if sw_path.is_file():
+        sw_source = sw_path.read_text(encoding="utf-8").replace("__VERSION__", _assets_version(web_dir))
+
+        @app.get("/sw.js", include_in_schema=False)
+        def service_worker() -> Response:
+            return Response(sw_source, media_type="text/javascript", headers={"Cache-Control": "no-cache"})
 
     app.mount("/", StaticFiles(directory=web_dir, html=True), name="web")
     return app

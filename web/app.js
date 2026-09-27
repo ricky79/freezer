@@ -23,7 +23,7 @@ const state = {
 if (!Array.isArray(state.queue)) state.queue = [];
 if (!state.snapshot || !Array.isArray(state.snapshot.lots)) state.snapshot = null;
 
-let registration = null; // service worker, impostato nel Task 9
+let registration = null; // service worker: dopo ogni sync controlla se c'è una versione nuova
 let takeLotId = null;
 let detailLotId = null;
 let editingLot = null;
@@ -361,3 +361,18 @@ setInterval(() => {
 
 render();
 syncer.syncNow();
+
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  const hadController = Boolean(navigator.serviceWorker.controller);
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController) window.location.reload(); // nuova versione installata
+  });
+  try {
+    registration = await navigator.serviceWorker.register('sw.js');
+  } catch {
+    // Senza HTTPS non c'è modalità offline, ma l'app funziona lo stesso.
+  }
+}
+
+registerServiceWorker();
