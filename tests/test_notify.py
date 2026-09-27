@@ -125,3 +125,17 @@ def test_main_prova_sends_test_message(env):
     opener = FakeOpener()
     assert main(["--prova"], env, opener=opener, today=TODAY) == 0
     assert json.loads(opener.calls[0][0].data)["text"] == TEST_MESSAGE
+
+
+def telegram_length(text):
+    return len(text.encode("utf-16-le")) // 2  # Telegram conta in unità UTF-16
+
+
+def test_long_message_is_cut_to_telegram_limit():
+    expired = [lot(f"Scaduto numero {i:02d} " + "x" * 60, 2, "buste", "2026-09-01") for i in range(30)]
+    expiring = [lot(f"In scadenza numero {i:02d} " + "y" * 60, 3, "porzioni", "2026-09-30") for i in range(30)]
+    message = build_message(expired + expiring, TODAY, 7)
+    assert telegram_length(message) <= 4096
+    shown = message.count("\n• ")
+    assert message.endswith(f"… e altri {60 - shown}: li trovi nell'app.")
+    assert "Scaduto numero 00" in message  # gli scaduti hanno la precedenza

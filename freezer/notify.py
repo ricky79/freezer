@@ -18,6 +18,7 @@ from freezer.expiry import EXPIRED, EXPIRING, days_left, expiry_status, today_in
 log = logging.getLogger("freezer.notify")
 
 TEST_MESSAGE = "❄️ Freezer: messaggio di prova. Se lo leggi, gli avvisi funzionano."
+MAX_MESSAGE = 4096  # limite di Telegram, in unità UTF-16
 
 
 def _day_month(value: date) -> str:
@@ -45,11 +46,28 @@ def build_message(lots: list[dict], today: date, warn_days: int) -> str | None:
             expiring.append(f"{line} ({_when(days_left(expiry, today))}, {_day_month(expiry)})")
     if not expired and not expiring:
         return None
+    hidden = 0
+    text = _compose(today, expired, expiring, hidden)
+    while _telegram_length(text) > MAX_MESSAGE:
+        # Si tolgono voci dal fondo: prima quelle in scadenza, gli scaduti per ultimi.
+        (expiring or expired).pop()
+        hidden += 1
+        text = _compose(today, expired, expiring, hidden)
+    return text
+
+
+def _telegram_length(text: str) -> int:
+    return len(text.encode("utf-16-le")) // 2
+
+
+def _compose(today: date, expired: list[str], expiring: list[str], hidden: int) -> str:
     sections = [f"❄️ Freezer · {_day_month(today)}"]
     if expired:
         sections.append("🔴 Scaduti\n" + "\n".join(expired))
     if expiring:
         sections.append("🟠 In scadenza\n" + "\n".join(expiring))
+    if hidden:
+        sections.append(f"… e altri {hidden}: li trovi nell'app.")
     return "\n\n".join(sections)
 
 

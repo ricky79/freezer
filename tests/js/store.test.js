@@ -1,5 +1,5 @@
 import { test, assert, assertEqual } from './harness.js';
-import { applyOp, changedFields, makeOp, removeSent, validateLot, viewLots } from '../../web/store.js';
+import { applyOp, changedFields, editOp, makeOp, removeSent, validateLot, viewLots } from '../../web/store.js';
 
 const lot = (id, extra = {}) => ({
   id, description: 'Piselli', category: 'verdure', quantity: 5, unit: 'buste', expiry: '2027-01-31', ...extra,
@@ -70,4 +70,16 @@ test('validateLot restituisce il primo errore in italiano', () => {
   assertEqual(validateLot({ ...ok, unit: '' }), 'Scegli l\'unità.');
   assertEqual(validateLot({ ...ok, quantity: null }), 'La quantità deve essere un numero intero tra 1 e 99999.');
   assertEqual(validateLot({ ...ok, expiry: '' }), 'Scegli la data di scadenza.');
+});
+
+test('editOp confronta col lotto di apertura: non sovrascrive le modifiche di altri telefoni', () => {
+  const ids = { uuid: () => 'e1', now: () => 'T' };
+  const opened = lot('a', { quantity: 5 });
+  const current = lot('a', { quantity: 3 }); // intanto un altro telefono ne ha presi 2
+  const values = { ...opened, expiry: '2027-03-01' }; // l'utente ha cambiato solo la scadenza
+  assertEqual(editOp(opened, current, values, ids), {
+    op_id: 'e1', type: 'edit', at: 'T', lot_id: 'a', fields: { expiry: '2027-03-01' },
+  });
+  assertEqual(editOp(opened, current, opened, ids), null);
+  assertEqual(editOp(opened, undefined, values, ids), null);
 });

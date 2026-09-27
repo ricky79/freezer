@@ -21,13 +21,18 @@ http://127.0.0.1:8766/tests/js/test.html. Le icone si rigenerano con `python too
 
 ## Installazione sul PC Linux
 
-1. **Chiave per GitHub** (una volta): `ssh-keygen -t ed25519 -C freezer-pc`, poi copia
-   `~/.ssh/id_ed25519.pub` in GitHub → repository `freezer` → Settings → Deploy keys → Add
-   (lascia *Allow write access* spento).
+1. **Chiave per GitHub** (una volta), dedicata a questo repository così non tocca le chiavi
+   che il PC usa già:
+   ```bash
+   ssh-keygen -t ed25519 -f ~/.ssh/freezer_deploy -N "" -C freezer-pc
+   printf 'Host github-freezer\n  HostName github.com\n  User git\n  IdentityFile ~/.ssh/freezer_deploy\n  IdentitiesOnly yes\n' >> ~/.ssh/config
+   ```
+   Poi copia il contenuto di `~/.ssh/freezer_deploy.pub` in GitHub → repository `freezer` →
+   Settings → Deploy keys → Add (lascia *Allow write access* spento).
 2. **Scarica e installa:**
    ```bash
    sudo install -d -o "$USER" -g "$USER" /opt/freezer
-   git clone git@github.com:<utente>/freezer.git /opt/freezer
+   git clone github-freezer:<utente>/freezer.git /opt/freezer
    cd /opt/freezer && sudo ./deploy/install.sh
    ```
    Lo script installa Caddy, crea l'utente `freezer`, i servizi e stampa gli indirizzi da aprire
@@ -46,8 +51,9 @@ Condividi → **Aggiungi alla schermata Home**.
 
 1. Su Telegram scrivi a **@BotFather** → `/newbot` → scegli nome e username. Copia il **token**.
 2. Crea un gruppo con la famiglia, aggiungi il bot e scrivi `/start` nel gruppo.
-3. Apri `https://api.telegram.org/bot<TOKEN>/getUpdates` nel browser e cerca
-   `"chat":{"id":-100…`: quel numero (col meno) è il **chat id**.
+3. Apri `https://api.telegram.org/bot<TOKEN>/getUpdates` nel browser e cerca `"chat":{"id":`
+   seguito da un numero negativo (per esempio `-4123456789`): quel numero, col meno, è il
+   **chat id**. Se la pagina è vuota, scrivi di nuovo `/start` nel gruppo e ricaricala.
 4. `sudo nano /etc/freezer/freezer.env` → compila `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID`.
 5. Prova:
    `sudo -u freezer bash -c 'set -a; . /etc/freezer/freezer.env; cd /opt/freezer && .venv/bin/python -m freezer.notify --prova'`

@@ -1,4 +1,4 @@
-import { changedFields, makeOp, removeSent, validateLot, viewLots } from './store.js';
+import { editOp, makeOp, removeSent, validateLot, viewLots } from './store.js';
 import { createSyncer } from './sync.js';
 import {
   addMonths, countAlerts, expiryStatus, expiryText, formatDate, formatDayMonth, todayIso,
@@ -341,10 +341,8 @@ $('lot-form').addEventListener('submit', (event) => {
     enqueue(makeOp('add', { lot: { id: crypto.randomUUID(), ...values } }));
     return;
   }
-  const current = findLot(editingLot.id);
-  if (!current) return;
-  const fields = changedFields(current, values);
-  if (Object.keys(fields).length) enqueue(makeOp('edit', { lot_id: current.id, fields }));
+  const op = editOp(editingLot, findLot(editingLot.id), values);
+  if (op) enqueue(op);
 });
 
 // ---- Avvio -----------------------------------------------------------------

@@ -47,6 +47,15 @@ export function changedFields(original, updated) {
   return fields;
 }
 
+// Operazione di modifica da mettere in coda (null se non serve). Il confronto è col lotto com'era
+// all'apertura del modulo: i campi non toccati non devono sovrascrivere le modifiche arrivate
+// intanto da altri telefoni.
+export function editOp(openedLot, currentLot, values, options) {
+  if (!currentLot) return null;
+  const fields = changedFields(openedLot, values);
+  return Object.keys(fields).length ? makeOp('edit', { lot_id: currentLot.id, fields }, options) : null;
+}
+
 export function validateLot({ description, category, unit, quantity, expiry }) {
   if (!description) return 'Scrivi una descrizione.';
   if (description.length > 100) return 'La descrizione può avere al massimo 100 caratteri.';

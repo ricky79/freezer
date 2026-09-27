@@ -65,6 +65,7 @@ check_port "$HTTP_PORT" caddy
 # ---- Pacchetti ---------------------------------------------------------------
 
 info "Pacchetti"
+apt-get update
 if ! command -v caddy >/dev/null; then
   apt-get install -y debian-keyring debian-archive-keyring apt-transport-https curl gnupg
   curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \

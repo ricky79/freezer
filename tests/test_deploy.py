@@ -52,3 +52,23 @@ def test_caddy_serves_only_the_root_certificate():
     assert "rewrite * /root.crt" in caddyfile
     assert "tls internal" in caddyfile
     assert "reverse_proxy 127.0.0.1:__APP_PORT__" in caddyfile
+
+
+def test_apt_lists_are_updated_before_the_first_install():
+    install = read("install.sh")
+    assert install.index("apt-get update") < install.index("apt-get install")
+
+
+README = (DEPLOY.parent / "README.md").read_text(encoding="utf-8")
+
+
+def test_readme_uses_a_dedicated_deploy_key():
+    # Una chiave già esistente del PC non va sovrascritta, e GitHub non accetta la stessa
+    # chiave come deploy key di due repository.
+    assert "ssh-keygen -t ed25519 -f ~/.ssh/freezer_deploy" in README
+    assert "git clone github-freezer:" in README
+
+
+def test_readme_chat_id_hint_fits_new_groups():
+    # I gruppi appena creati hanno id come -4123456789; solo i supergruppi iniziano con -100.
+    assert '"chat":{"id":-100' not in README
