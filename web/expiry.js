@@ -59,3 +59,10 @@ export function addMonths(iso, months) {
   const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
   return `${year}-${pad(month + 1)}-${pad(Math.min(d, lastDay))}`;
 }
+
+// Scadenza proposta in "Aggiungi": oggi + i mesi del tipo. null se il tipo non ne ha, è
+// sconosciuto o il catalogo in cache è di una versione che non li conosce ancora.
+export function proposedExpiry(categoryCode, catalog, today) {
+  const months = catalog?.categories?.find((c) => c.code === categoryCode)?.months;
+  return Number.isInteger(months) ? addMonths(today, months) : null;
+}

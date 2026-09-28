@@ -73,9 +73,21 @@ posizione/cassetto, codici a barre, notifiche push iOS, accesso da fuori casa.
 Il catalogo è definito solo in Python (`freezer/catalog.py`) e inviato al telefono insieme
 all'inventario, che lo tiene in cache. Così server e client non possono divergere.
 
-**Tipi** (codice → etichetta):
-`carne` Carne · `pesce` Pesce · `verdure` Verdure · `frutta` Frutta · `sughi` Sughi ·
-`piatti_pronti` Piatti pronti · `pane_pizza` Pane e pizza · `dolci` Dolci · `altro` Altro
+**Tipi** (codice → etichetta → mesi per la scadenza proposta, §5.3):
+
+| Codice | Etichetta | Mesi | | Codice | Etichetta | Mesi |
+|---|---|---|---|---|---|---|
+| `pollo_tacchino` | Pollo e tacchino | 6 | | `frutta` | Frutta | 9 |
+| `manzo` | Manzo | 9 | | `sughi` | Sughi | 3 |
+| `maiale` | Maiale | 6 | | `piatti_pronti` | Piatti pronti | 3 |
+| `carne` | Altra carne | 3 | | `pane_pizza` | Pane e pizza | 3 |
+| `pesce` | Pesce | 3 | | `dolci` | Dolci | 3 |
+| `verdure` | Verdure | 9 | | `altro` | Altro | — |
+
+`carne` era il tipo unico della prima versione: dal 2026-09-28 (ritorni del collaudo) la carne è
+divisa in pollo e tacchino, manzo e maiale, e il vecchio codice resta valido col significato di
+"Altra carne" (agnello, coniglio, macinato misto, salsicce…), così i lotti già salvati e le
+aggiunte in coda sui telefoni offline non diventano `invalid`.
 
 **Unità** (codice → singolare / plurale):
 
@@ -182,7 +194,7 @@ così un reinvio non la rivaluta.
 {
   "server_time": "2026-09-27T18:32:00+02:00",
   "warn_days": 7,
-  "catalog": {"categories": [...], "units": [...]},
+  "catalog": {"categories": [{"code": "manzo", "label": "Manzo", "months": 9}, ...], "units": [...]},
   "lots": [ /* solo lotti active, ordinati per expiry e descrizione */ ],
   "suggestions": [ {"description": "Ragù della nonna", "category": "sughi", "unit": "barattoli_grandi"} ]
 }
@@ -254,6 +266,10 @@ garantita dall'installazione fatta in casa.
 - **Tipo** e **Unità**: selettori.
 - **Quantità**: stepper per le unità a conteggio, campo numerico per i grammi.
 - **Scadenza**: selettore data nativo + pulsanti rapidi `+1 mese`, `+3 mesi`, `+6 mesi` da oggi.
+  In **Aggiungi**, scegliendo il tipo (anche tramite un suggerimento) la data diventa oggi + i mesi
+  del tipo (§3.1); cambiando tipo la proposta segue, e per `altro` il campo si svuota. Una data
+  scelta a mano o coi pulsanti rapidi non viene più toccata. In **Modifica** nessuna proposta:
+  cambiare tipo non sposta la scadenza di ciò che è già nel freezer.
 - Validazione in pagina con messaggi in italiano prima di mettere l'operazione in coda.
 
 ### 5.4 Elimina

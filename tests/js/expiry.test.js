@@ -1,6 +1,8 @@
 import { test, assertEqual } from './harness.js';
+import { CATALOG } from './catalog.fixture.js';
 import {
-  addMonths, countAlerts, daysLeft, expiryStatus, expiryText, formatDate, formatDayMonth, todayIso,
+  addMonths, countAlerts, daysLeft, expiryStatus, expiryText, formatDate, formatDayMonth,
+  proposedExpiry, todayIso,
 } from '../../web/expiry.js';
 
 test('todayIso usa la data locale anche vicino a mezzanotte', () => {
@@ -50,4 +52,17 @@ test('addMonths gestisce fine mese e anni bisestili', () => {
   assertEqual(addMonths('2026-01-31', 1), '2026-02-28');
   assertEqual(addMonths('2028-01-31', 1), '2028-02-29');
   assertEqual(addMonths('2026-08-31', 3), '2026-11-30');
+});
+
+test('proposedExpiry aggiunge a oggi i mesi del tipo', () => {
+  assertEqual(proposedExpiry('manzo', CATALOG, '2026-09-28'), '2027-06-28');
+  assertEqual(proposedExpiry('sughi', CATALOG, '2026-11-30'), '2027-02-28');
+});
+
+test('proposedExpiry senza mesi, tipo sconosciuto o catalogo vecchio dà null', () => {
+  assertEqual(proposedExpiry('altro', CATALOG, '2026-09-28'), null);
+  assertEqual(proposedExpiry('', CATALOG, '2026-09-28'), null);
+  assertEqual(proposedExpiry('gelati', CATALOG, '2026-09-28'), null);
+  const cached = { categories: [{ code: 'manzo', label: 'Manzo' }], units: [] };
+  assertEqual(proposedExpiry('manzo', cached, '2026-09-28'), null);
 });

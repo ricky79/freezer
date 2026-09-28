@@ -31,7 +31,7 @@ def test_inventory_empty_snapshot(client):
     assert data["warn_days"] == 5
     assert data["lots"] == []
     assert data["suggestions"] == []
-    assert len(data["catalog"]["categories"]) == 9
+    assert len(data["catalog"]["categories"]) == 12
     assert "T" in data["server_time"]
 
 

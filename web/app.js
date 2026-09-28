@@ -1,7 +1,8 @@
 import { editOp, makeOp, removeSent, validateLot, viewLots } from './store.js';
 import { createSyncer } from './sync.js';
 import {
-  addMonths, countAlerts, expiryStatus, expiryText, formatDate, formatDayMonth, todayIso,
+  addMonths, countAlerts, expiryStatus, expiryText, formatDate, formatDayMonth, proposedExpiry,
+  todayIso,
 } from './expiry.js';
 import {
   MAX_QUANTITY, categoryLabel, escapeHtml, formatQuantity, normalizeText, parseQuantity,
@@ -27,6 +28,7 @@ let registration = null; // service worker: dopo ogni sync controlla se c'è una
 let takeLotId = null;
 let detailLotId = null;
 let editingLot = null;
+let expiryChosen = false; // data scelta a mano: la scadenza proposta per il tipo non la tocca
 
 const $ = (id) => document.getElementById(id);
 const catalog = () => state.snapshot?.catalog ?? { categories: [], units: [] };
@@ -207,6 +209,12 @@ function updateQuantityMode() {
   $('f-stepper').classList.toggle('is-grams', $('f-unit').value === 'grammi');
 }
 
+// Solo in "Aggiungi": in modifica cambiare tipo non sposta la scadenza di ciò che è già dentro.
+function proposeExpiry() {
+  if (editingLot || expiryChosen) return;
+  $('f-expiry').value = proposedExpiry($('f-category').value, catalog(), todayIso()) ?? '';
+}
+
 function openForm(lot = null) {
   editingLot = lot;
   const { categories, units } = catalog();
@@ -221,6 +229,7 @@ function openForm(lot = null) {
   $('f-quantity').value = lot ? String(lot.quantity) : '1';
   $('f-quantity').dataset.max = String(MAX_QUANTITY);
   $('f-expiry').value = lot?.expiry ?? '';
+  expiryChosen = false;
   updateQuantityMode();
   hideError('form-error');
   $('form-dialog').showModal();
@@ -313,13 +322,21 @@ $('f-description').addEventListener('input', () => {
   $('f-category').value = match.category;
   $('f-unit').value = match.unit;
   updateQuantityMode();
+  proposeExpiry();
 });
 
+$('f-category').addEventListener('change', proposeExpiry);
 $('f-unit').addEventListener('change', updateQuantityMode);
+
+$('f-expiry').addEventListener('change', () => {
+  expiryChosen = $('f-expiry').value !== '';
+});
 
 $('quick-expiry').addEventListener('click', (event) => {
   const button = event.target.closest('[data-months]');
-  if (button) $('f-expiry').value = addMonths(todayIso(), Number(button.dataset.months));
+  if (!button) return;
+  $('f-expiry').value = addMonths(todayIso(), Number(button.dataset.months));
+  expiryChosen = true;
 });
 
 $('lot-form').addEventListener('submit', (event) => {

@@ -28,6 +28,12 @@ def test_description_of_100_characters_is_valid(conn):
     assert statuses(apply_ops(conn, [add_op(description="x" * 100)], NOW)) == [APPLIED]
 
 
+@pytest.mark.parametrize("category", ["pollo_tacchino", "manzo", "maiale", "carne"])
+def test_add_accepts_meat_types_and_legacy_carne(conn, category):
+    assert statuses(apply_ops(conn, [add_op(category=category)], NOW)) == [APPLIED]
+    assert lot(conn)["category"] == category
+
+
 def test_add_with_existing_lot_id_is_ignored(conn):
     apply_ops(conn, [add_op("op1")], NOW)
     results = apply_ops(conn, [add_op("op2", description="Altro nome")], LATER)
