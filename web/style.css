@@ -168,6 +168,9 @@ button, input, select { font: inherit; color: inherit; }
   border-radius: 10px;
   background: var(--bg);
 }
+/* Con l'aspetto nativo, Safari per iPhone forza sui campi data box-sizing: content-box e una
+   larghezza minima: padding e bordo si sommano al 100% e il campo esce dal modulo. */
+input[type="date"].field { -webkit-appearance: none; appearance: none; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 .stepper { display: flex; gap: 8px; }
