@@ -39,6 +39,8 @@ http://127.0.0.1:8766/tests/js/test.html. Le icone si rigenerano con `python too
    sugli iPhone. Porte usate: 8765 (solo interna), 443 e 80. Se 443/80 fossero occupate:
    `sudo ./deploy/install.sh --https-port 8443 --http-port 8080`.
 3. **Aggiornare** dopo nuove modifiche: `cd /opt/freezer && git pull && sudo ./deploy/install.sh`.
+   La configurazione di Caddy è condivisa con le altre app di casa: ogni app scrive il suo file
+   in `/etc/caddy/sites/`, Freezer possiede `/etc/caddy/Caddyfile`.
 
 ## iPhone (una volta per telefono)
 

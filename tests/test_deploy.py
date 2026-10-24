@@ -12,7 +12,7 @@ def read(name: str) -> str:
 
 def test_install_script_fills_every_placeholder():
     install = read("install.sh")
-    for name in ["Caddyfile.template", "cert.html", "systemd/freezer-notify.timer"]:
+    for name in ["Caddyfile.template", "caddy-site.template", "cert.html", "systemd/freezer-notify.timer"]:
         for placeholder in set(re.findall(r"__[A-Z_]+__", read(name))):
             assert f"s|{placeholder}|" in install, (name, placeholder)
 
@@ -46,12 +46,25 @@ def test_units_run_as_freezer_with_env_file():
     assert "--port ${FREEZER_PORT}" in service
 
 
-def test_caddy_serves_only_the_root_certificate():
+def test_main_caddyfile_holds_only_globals_and_the_shared_import():
     caddyfile = read("Caddyfile.template")
     assert caddyfile.startswith("# freezer")
-    assert "rewrite * /root.crt" in caddyfile
-    assert "tls internal" in caddyfile
-    assert "reverse_proxy 127.0.0.1:__APP_PORT__" in caddyfile
+    assert 'name "Freezer di casa"' in caddyfile
+    assert "import /etc/caddy/sites/*.caddy" in caddyfile.splitlines()
+    assert "reverse_proxy" not in caddyfile
+
+
+def test_freezer_site_serves_only_the_root_certificate():
+    site = read("caddy-site.template")
+    assert "rewrite * /root.crt" in site
+    assert "tls internal" in site
+    assert "reverse_proxy 127.0.0.1:__APP_PORT__" in site
+
+
+def test_install_writes_the_site_into_the_shared_folder():
+    install = read("install.sh")
+    assert "install -d -m 755 /etc/caddy/sites" in install
+    assert "/etc/caddy/sites/freezer.caddy" in install
 
 
 def test_apt_lists_are_updated_before_the_first_install():

@@ -124,14 +124,16 @@ CERT_URL="http://$HOST$HTTP_SUFFIX/cert"
 if [[ -f /etc/caddy/Caddyfile && ! -f /etc/caddy/Caddyfile.orig ]] && ! grep -q '^# freezer' /etc/caddy/Caddyfile; then
   cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.orig
 fi
+install -d -m 755 /etc/caddy/sites
 sed -e "s|__HOST__|$HOST|g" \
     -e "s|__HTTPS_PORT__|$HTTPS_PORT|g" \
     -e "s|__HTTP_PORT__|$HTTP_PORT|g" \
     -e "s|__APP_PORT__|$APP_PORT|g" \
     -e "s|__HTTPS_SUFFIX__|$HTTPS_SUFFIX|g" \
-    deploy/Caddyfile.template > /etc/caddy/Caddyfile
+    deploy/caddy-site.template > /etc/caddy/sites/freezer.caddy
+cp deploy/Caddyfile.template /etc/caddy/Caddyfile
 sed "s|__APP_URL__|$APP_URL|g" deploy/cert.html > /etc/caddy/freezer-cert.html
-chmod 644 /etc/caddy/Caddyfile /etc/caddy/freezer-cert.html
+chmod 644 /etc/caddy/Caddyfile /etc/caddy/sites/freezer.caddy /etc/caddy/freezer-cert.html
 caddy adapt --config /etc/caddy/Caddyfile --adapter caddyfile >/dev/null || die "Caddyfile non valido"
 systemctl enable --quiet caddy
 systemctl reload-or-restart caddy
